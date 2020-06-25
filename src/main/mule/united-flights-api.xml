@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="58eee1c0-d030-4c38-bf34-d1c77c6fb7ff" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="a9e2783d-a32a-4e62-8f89-57b78e6b9e79">
+		<http:request-connection host="ilt.learn.mulesoft.com" />
+	</http:request-config>
+	<flow name="united-flights-apiFlow" doc:id="e4c6916b-0076-4d57-bcef-1e0be54823fb" >
+		<http:listener doc:name="Listener" doc:id="999f6d58-94af-4415-83e2-9939f308528f" config-ref="HTTP_Listener_config" path="/united"/>
+		<set-variable value='#[attributes.queryParams.destination default "SFO"]' doc:name="Set Variable" doc:id="68828f96-71d2-4181-80bf-16f2ff4589c7" variableName="destination"/>
+		<http:request method="GET" doc:name="Request" doc:id="7f9912e1-b5ba-491d-95f1-2c18168c5448" config-ref="HTTP_Request_configuration" path="/united/flights">
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	destination : attributes.queryParameters.destination
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="be187164-31f7-4e88-aaa3-37b0974be14e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="64342bd9-b4ad-4a0d-9eb7-142ae541831b" />
+	</flow>
+</mule>
